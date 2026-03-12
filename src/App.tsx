@@ -154,6 +154,10 @@ export default function App() {
     setLearners(learners.filter(l => l.id !== id));
   };
 
+  const isValidIndianMobile = (num: string) => {
+    return /^[6-9]\d{9}$/.test(num);
+  };
+
   const updateLearner = (id: string, field: keyof Learner, value: string) => {
     setLearners(learners.map(l => {
       if (l.id === id) {
@@ -167,6 +171,10 @@ export default function App() {
         // Mobile validation: 10 digits only
         if (field === 'mobile') {
           processedValue = value.replace(/\D/g, '').slice(0, 10);
+          // Optional: Enforce first digit 6-9 immediately or just validate later
+          if (processedValue.length > 0 && !/^[6-9]/.test(processedValue)) {
+            processedValue = ''; // Clear if invalid start
+          }
         }
 
         // Age validation: Numbers only
@@ -195,14 +203,23 @@ export default function App() {
 
     // Basic validation
     for (const learner of learners) {
-      if (!learner.name || !learner.mobile || learner.mobile.length !== 10) {
-        setSubmitStatus({ type: 'error', message: `Please fill all required fields for ${learner.name || 'all learners'}` });
+      if (!learner.name) {
+        setSubmitStatus({ type: 'error', message: `Please enter name for all learners` });
+        return;
+      }
+      if (!isValidIndianMobile(learner.mobile)) {
+        setSubmitStatus({ type: 'error', message: `Invalid mobile number for ${learner.name || 'a learner'}. Must be 10 digits starting with 6, 7, 8, or 9.` });
         return;
       }
     }
 
-    if (!surveyorName || !surveyorMobile || surveyorMobile.length !== 10) {
-      setSubmitStatus({ type: 'error', message: 'Please provide valid surveyor details' });
+    if (!surveyorName) {
+      setSubmitStatus({ type: 'error', message: 'Please provide surveyor name' });
+      return;
+    }
+
+    if (!isValidIndianMobile(surveyorMobile)) {
+      setSubmitStatus({ type: 'error', message: 'Invalid surveyor mobile number. Must be 10 digits starting with 6, 7, 8, or 9.' });
       return;
     }
 
@@ -468,7 +485,11 @@ export default function App() {
                             value={learner.mobile}
                             onChange={(e) => updateLearner(learner.id, 'mobile', e.target.value)}
                             placeholder="10 digits"
-                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm"
+                            className={`w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm ${
+                              learner.mobile && !isValidIndianMobile(learner.mobile) 
+                                ? 'border-[#EA4335] bg-[#FCE8E6]/20' 
+                                : 'border-[#DADCE0]'
+                            }`}
                             required
                           />
                         </div>
@@ -539,9 +560,18 @@ export default function App() {
                 <input
                   type="text"
                   value={surveyorMobile}
-                  onChange={(e) => setSurveyorMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    if (val.length === 0 || /^[6-9]/.test(val)) {
+                      setSurveyorMobile(val);
+                    }
+                  }}
                   placeholder="10 Digit Mobile Number"
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent outline-none transition-all"
+                  className={`w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent outline-none transition-all ${
+                    surveyorMobile && !isValidIndianMobile(surveyorMobile)
+                      ? 'border-[#EA4335] bg-[#FCE8E6]/20'
+                      : 'border-[#DADCE0]'
+                  }`}
                   required
                 />
               </div>
