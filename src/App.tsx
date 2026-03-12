@@ -66,6 +66,7 @@ export default function App() {
   const [surveyorMobile, setSurveyorMobile] = useState('');
   
   const [learners, setLearners] = useState<Learner[]>([]);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -115,6 +116,22 @@ export default function App() {
       if (data.success) {
         setAssessmentCentre(data.assessmentCentre);
         setNyayPanchayat(data.nyayPanchayat);
+        
+        if (data.existingLearners && data.existingLearners.length > 0) {
+          setIsUpdateMode(true);
+          setLearners(data.existingLearners.map((l: any) => ({
+            ...l,
+            id: Math.random().toString(36).substr(2, 9)
+          })));
+          setSurveyorName(data.surveyorName || '');
+          setSurveyorMobile(data.surveyorMobile || '');
+          setSubmitStatus({ type: 'success', message: 'Existing data found and loaded for this UDISE code.' });
+        } else {
+          setIsUpdateMode(false);
+          setLearners([]);
+          setSurveyorName('');
+          setSurveyorMobile('');
+        }
       } else {
         setSubmitStatus({ type: 'error', message: data.message || 'UDISE Code not found in Sheet1' });
       }
@@ -233,7 +250,8 @@ export default function App() {
         nyayPanchayat,
         learners,
         surveyorName,
-        surveyorMobile
+        surveyorMobile,
+        isUpdate: isUpdateMode
       };
 
       const response = await fetch(GAS_URL, {
@@ -247,7 +265,9 @@ export default function App() {
 
       // Since we use no-cors, we can't read the response body, 
       // but we can assume success if no error is thrown.
-      setSubmitStatus({ type: 'success', message: 'Data submitted successfully to Google Sheets!' });
+      const successMsg = isUpdateMode ? 'Data updated successfully in Google Sheets!' : 'Data saved successfully to Google Sheets!';
+      setSubmitStatus({ type: 'success', message: successMsg });
+      alert(successMsg);
       
       // Reset form after success
       setTimeout(() => {
@@ -255,6 +275,7 @@ export default function App() {
         setUdiseCode('');
         setSurveyorName('');
         setSurveyorMobile('');
+        setIsUpdateMode(false);
       }, 3000);
 
     } catch (error) {
@@ -612,12 +633,12 @@ export default function App() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" size={24} />
-                  Submitting...
+                  {isUpdateMode ? 'Updating...' : 'Submitting...'}
                 </>
               ) : (
                 <>
                   <Save size={24} />
-                  Submit All Data
+                  {isUpdateMode ? 'Update All Data' : 'Submit All Data'}
                 </>
               )}
             </button>

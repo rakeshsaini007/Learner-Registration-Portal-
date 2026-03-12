@@ -27,10 +27,40 @@ function doGet(e) {
     // Skip header row
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toString() === udiseCode) {
+        // Also check for existing learners in Data sheet
+        const dataSheet = ss.getSheetByName('Data');
+        const learnerData = dataSheet.getDataRange().getValues();
+        const existingLearners = [];
+        let surveyorName = '';
+        let surveyorMobile = '';
+
+        for (let j = 1; j < learnerData.length; j++) {
+          if (learnerData[j][0].toString() === udiseCode) {
+            existingLearners.push({
+              registrationNo: learnerData[j][3],
+              name: learnerData[j][4],
+              fatherHusbandName: learnerData[j][5],
+              motherName: learnerData[j][6],
+              maritalStatus: learnerData[j][7],
+              age: learnerData[j][8],
+              gender: learnerData[j][9],
+              isDivyang: learnerData[j][10],
+              divyangType: learnerData[j][11],
+              category: learnerData[j][12],
+              mobile: learnerData[j][13]
+            });
+            surveyorName = learnerData[j][14];
+            surveyorMobile = learnerData[j][15];
+          }
+        }
+
         return ContentService.createTextOutput(JSON.stringify({
           success: true,
           assessmentCentre: data[i][1],
-          nyayPanchayat: data[i][2]
+          nyayPanchayat: data[i][2],
+          existingLearners: existingLearners,
+          surveyorName: surveyorName,
+          surveyorMobile: surveyorMobile
         })).setMimeType(ContentService.MimeType.TEXT);
       }
     }
@@ -54,8 +84,20 @@ function doPost(e) {
       nyayPanchayat, 
       learners, 
       surveyorName, 
-      surveyorMobile 
+      surveyorMobile,
+      isUpdate
     } = params;
+    
+    // If updating, remove existing rows for this UDISE code first
+    if (isUpdate) {
+      const rows = dataSheet.getDataRange().getValues();
+      // Iterate backwards to avoid index shifting issues
+      for (let i = rows.length - 1; i >= 1; i--) {
+        if (rows[i][0].toString() === udiseCode) {
+          dataSheet.deleteRow(i + 1);
+        }
+      }
+    }
     
     learners.forEach(learner => {
       dataSheet.appendRow([
@@ -80,13 +122,13 @@ function doPost(e) {
     
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      message: 'Data saved successfully'
-    })).setMimeType(ContentService.MimeType.JSON);
+      message: isUpdate ? 'Data updated successfully' : 'Data saved successfully'
+    })).setMimeType(ContentService.MimeType.TEXT);
     
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       message: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    })).setMimeType(ContentService.MimeType.TEXT);
   }
 }
