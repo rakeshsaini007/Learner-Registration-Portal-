@@ -22,35 +22,43 @@ function doGet(e) {
   if (action === 'fetchUdise') {
     const udiseCode = e.parameter.udiseCode;
     const sheet1 = ss.getSheetByName('Sheet1');
+    if (!sheet1) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Sheet1 not found' })).setMimeType(ContentService.MimeType.TEXT);
+    }
+    
     const data = sheet1.getDataRange().getValues();
     
     // Skip header row
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0].toString() === udiseCode) {
+      const sheetUdise = data[i][0].toString().split('.')[0].trim();
+      if (sheetUdise === udiseCode) {
         // Also check for existing learners in Data sheet
         const dataSheet = ss.getSheetByName('Data');
-        const learnerData = dataSheet.getDataRange().getValues();
         const existingLearners = [];
         let surveyorName = '';
         let surveyorMobile = '';
 
-        for (let j = 1; j < learnerData.length; j++) {
-          if (learnerData[j][0].toString() === udiseCode) {
-            existingLearners.push({
-              registrationNo: learnerData[j][3],
-              name: learnerData[j][4],
-              fatherHusbandName: learnerData[j][5],
-              motherName: learnerData[j][6],
-              maritalStatus: learnerData[j][7],
-              age: learnerData[j][8],
-              gender: learnerData[j][9],
-              isDivyang: learnerData[j][10],
-              divyangType: learnerData[j][11],
-              category: learnerData[j][12],
-              mobile: learnerData[j][13]
-            });
-            surveyorName = learnerData[j][14];
-            surveyorMobile = learnerData[j][15];
+        if (dataSheet) {
+          const learnerData = dataSheet.getDataRange().getValues();
+          for (let j = 1; j < learnerData.length; j++) {
+            const learnerUdise = learnerData[j][0].toString().split('.')[0].trim();
+            if (learnerUdise === udiseCode) {
+              existingLearners.push({
+                registrationNo: learnerData[j][3].toString(),
+                name: learnerData[j][4].toString(),
+                fatherHusbandName: learnerData[j][5].toString(),
+                motherName: learnerData[j][6].toString(),
+                maritalStatus: learnerData[j][7].toString(),
+                age: learnerData[j][8].toString(),
+                gender: learnerData[j][9].toString(),
+                isDivyang: learnerData[j][10].toString(),
+                divyangType: learnerData[j][11].toString(),
+                category: learnerData[j][12].toString(),
+                mobile: learnerData[j][13].toString()
+              });
+              surveyorName = learnerData[j][14].toString();
+              surveyorMobile = learnerData[j][15].toString();
+            }
           }
         }
 

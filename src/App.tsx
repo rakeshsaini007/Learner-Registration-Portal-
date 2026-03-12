@@ -83,14 +83,7 @@ export default function App() {
   }, [udiseCode]);
 
   // Update registration numbers when UDISE code or learners list changes
-  useEffect(() => {
-    if (udiseCode.length === 11) {
-      setLearners(prev => prev.map((l, index) => ({
-        ...l,
-        registrationNo: `${udiseCode}${String(index + 1).padStart(3, '0')}`
-      })));
-    }
-  }, [udiseCode, learners.length]);
+  // Removed redundant useEffect that was overwriting fetched data
 
   // --- Handlers ---
 
@@ -98,6 +91,7 @@ export default function App() {
     setIsLoadingUdise(true);
     setSubmitStatus(null);
     try {
+      console.log('Fetching data for UDISE:', code);
       const response = await fetch(`${GAS_URL}?action=fetchUdise&udiseCode=${code}`, {
         method: 'GET',
         headers: {
@@ -106,6 +100,7 @@ export default function App() {
       });
       
       const text = await response.text();
+      console.log('Raw response:', text);
       let data;
       try {
         data = JSON.parse(text);
@@ -114,10 +109,12 @@ export default function App() {
       }
 
       if (data.success) {
+        console.log('Data found:', data);
         setAssessmentCentre(data.assessmentCentre);
         setNyayPanchayat(data.nyayPanchayat);
         
         if (data.existingLearners && data.existingLearners.length > 0) {
+          console.log('Loading existing learners:', data.existingLearners.length);
           setIsUpdateMode(true);
           setLearners(data.existingLearners.map((l: any) => ({
             ...l,
@@ -127,12 +124,14 @@ export default function App() {
           setSurveyorMobile(data.surveyorMobile || '');
           setSubmitStatus({ type: 'success', message: 'Existing data found and loaded for this UDISE code.' });
         } else {
+          console.log('No existing learners found for this UDISE.');
           setIsUpdateMode(false);
           setLearners([]);
           setSurveyorName('');
           setSurveyorMobile('');
         }
       } else {
+        console.log('UDISE not found in Sheet1');
         setSubmitStatus({ type: 'error', message: data.message || 'UDISE Code not found in Sheet1' });
       }
     } catch (error) {
