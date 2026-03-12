@@ -315,9 +315,9 @@ export default function App() {
             </div>
           </section>
 
-          {/* Section 2: Learners Table */}
-          <section className="bg-white rounded-2xl shadow-sm border border-[#E0E0E0] overflow-hidden">
-            <div className="p-6 md:p-8 border-bottom border-[#E0E0E0] flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Section 2: Learner Details Cards */}
+          <section className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#E6F4EA] flex items-center justify-center text-[#1E8E3E]">
                   <Plus size={18} />
@@ -334,126 +334,111 @@ export default function App() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#F8F9FA] border-y border-[#E0E0E0]">
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Reg. No.</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Name (English)</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Father/Husband</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Mother</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Marital Status</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Age</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Gender</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Divyang?</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Type</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Category</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Mobile</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#5F6368] uppercase tracking-wider whitespace-nowrap">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E0E0E0]">
-                  <AnimatePresence initial={false}>
-                    {learners.map((learner, idx) => (
-                      <motion.tr
-                        key={learner.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="hover:bg-[#F1F3F4]/30 transition-colors"
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <AnimatePresence initial={false}>
+                {learners.map((learner, idx) => (
+                  <motion.div
+                    key={learner.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white rounded-2xl shadow-sm border border-[#E0E0E0] overflow-hidden flex flex-col"
+                  >
+                    {/* Card Header */}
+                    <div className="px-5 py-3 bg-[#F8F9FA] border-b border-[#E0E0E0] flex items-center justify-between">
+                      <span className="text-xs font-mono font-semibold text-[#5F6368] bg-[#E8F0FE] px-2 py-1 rounded">
+                        #{learner.registrationNo || 'PENDING'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLearner(learner.id)}
+                        className="p-1.5 text-[#EA4335] hover:bg-[#FCE8E6] rounded-full transition-colors"
+                        title="Remove Learner"
                       >
-                        <td className="px-4 py-4">
-                          <input
-                            type="text"
-                            value={learner.registrationNo}
-                            readOnly
-                            className="w-36 px-2 py-1.5 rounded border border-transparent bg-transparent text-xs font-mono text-[#5F6368]"
-                          />
-                        </td>
-                        <td className="px-4 py-4">
-                          <input
-                            type="text"
-                            value={learner.name}
-                            onChange={(e) => updateLearner(learner.id, 'name', e.target.value)}
-                            placeholder="NAME"
-                            className="w-40 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm"
-                            required
-                          />
-                        </td>
-                        <td className="px-4 py-4">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-5 space-y-4 flex-grow">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Name of Learner (English)</label>
+                        <input
+                          type="text"
+                          value={learner.name}
+                          onChange={(e) => updateLearner(learner.id, 'name', e.target.value)}
+                          placeholder="FULL NAME"
+                          className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent outline-none text-sm transition-all"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Father/Husband</label>
                           <input
                             type="text"
                             value={learner.fatherHusbandName}
                             onChange={(e) => updateLearner(learner.id, 'fatherHusbandName', e.target.value)}
-                            placeholder="FATHER/HUSBAND"
-                            className="w-40 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm"
+                            placeholder="NAME"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm"
                           />
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Mother</label>
                           <input
                             type="text"
                             value={learner.motherName}
                             onChange={(e) => updateLearner(learner.id, 'motherName', e.target.value)}
-                            placeholder="MOTHER"
-                            className="w-40 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm"
+                            placeholder="NAME"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm"
                           />
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Marital Status</label>
                           <select
                             value={learner.maritalStatus}
                             onChange={(e) => updateLearner(learner.id, 'maritalStatus', e.target.value)}
-                            className="w-32 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm bg-white"
                           >
                             <option value="">Select</option>
                             {MARITAL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Age</label>
                           <input
                             type="text"
                             value={learner.age}
                             onChange={(e) => updateLearner(learner.id, 'age', e.target.value)}
-                            placeholder="Age"
-                            className="w-16 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm"
+                            placeholder="Years"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm"
                           />
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Gender</label>
                           <select
                             value={learner.gender}
                             onChange={(e) => updateLearner(learner.id, 'gender', e.target.value as any)}
-                            className="w-20 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm bg-white"
                           >
                             <option value="">Select</option>
-                            <option value="M">M</option>
-                            <option value="F">F</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
                           </select>
-                        </td>
-                        <td className="px-4 py-4">
-                          <select
-                            value={learner.isDivyang}
-                            onChange={(e) => updateLearner(learner.id, 'isDivyang', e.target.value as any)}
-                            className="w-20 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm bg-white"
-                          >
-                            <option value="N">N</option>
-                            <option value="Y">Y</option>
-                          </select>
-                        </td>
-                        <td className="px-4 py-4">
-                          <select
-                            value={learner.divyangType}
-                            onChange={(e) => updateLearner(learner.id, 'divyangType', e.target.value)}
-                            disabled={learner.isDivyang === 'N'}
-                            className={`w-40 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm bg-white ${learner.isDivyang === 'N' ? 'bg-[#F1F3F4] cursor-not-allowed' : ''}`}
-                          >
-                            <option value="">Select Type</option>
-                            {DIVYANG_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Category</label>
                           <select
                             value={learner.category}
                             onChange={(e) => updateLearner(learner.id, 'category', e.target.value as any)}
-                            className="w-24 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm bg-white"
                           >
                             <option value="">Select</option>
                             <option value="GEN">GEN</option>
@@ -461,39 +446,70 @@ export default function App() {
                             <option value="SC">SC</option>
                             <option value="ST">ST</option>
                           </select>
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Divyang?</label>
+                          <select
+                            value={learner.isDivyang}
+                            onChange={(e) => updateLearner(learner.id, 'isDivyang', e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm bg-white"
+                          >
+                            <option value="N">No</option>
+                            <option value="Y">Yes</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Mobile</label>
                           <input
                             type="text"
                             value={learner.mobile}
                             onChange={(e) => updateLearner(learner.id, 'mobile', e.target.value)}
                             placeholder="10 digits"
-                            className="w-32 px-3 py-1.5 rounded border border-[#DADCE0] focus:ring-1 focus:ring-[#1A73E8] outline-none text-sm"
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm"
                             required
                           />
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            type="button"
-                            onClick={() => removeLearner(learner.id)}
-                            className="p-2 text-[#EA4335] hover:bg-[#FCE8E6] rounded-full transition-colors"
+                        </div>
+                      </div>
+
+                      {learner.isDivyang === 'Y' && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="space-y-1.5"
+                        >
+                          <label className="text-[11px] font-bold text-[#5F6368] uppercase tracking-wider">Type of Divyang</label>
+                          <select
+                            value={learner.divyangType}
+                            onChange={(e) => updateLearner(learner.id, 'divyangType', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-[#DADCE0] focus:ring-2 focus:ring-[#1A73E8] outline-none text-sm bg-white"
                           >
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                  {learners.length === 0 && (
-                    <tr>
-                      <td colSpan={12} className="px-4 py-12 text-center text-[#70757A]">
-                        No learners added yet. Click "Add Learner" to start.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                            <option value="">Select Type</option>
+                            {DIVYANG_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
+
+            {learners.length === 0 && (
+              <div className="bg-white rounded-2xl border-2 border-dashed border-[#DADCE0] p-12 text-center">
+                <p className="text-[#70757A] mb-4">No learners added yet.</p>
+                <button
+                  type="button"
+                  onClick={addLearner}
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-[#E8F0FE] text-[#1A73E8] rounded-lg hover:bg-[#D2E3FC] transition-colors font-medium"
+                >
+                  <Plus size={18} />
+                  Add First Learner
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Section 3: Surveyor Details */}
