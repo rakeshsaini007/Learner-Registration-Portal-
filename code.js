@@ -19,8 +19,14 @@ function doGet(e) {
   const action = e.parameter.action;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
+  // Helper to clean UDISE codes (handles scientific notation, decimals, and padding)
+  const cleanUdise = (val) => {
+    if (!val) return "";
+    return val.toString().split('.')[0].split('E')[0].trim().padStart(11, '0');
+  };
+
   if (action === 'fetchUdise') {
-    const udiseCode = e.parameter.udiseCode;
+    const udiseCode = cleanUdise(e.parameter.udiseCode);
     const sheet1 = ss.getSheetByName('Sheet1');
     if (!sheet1) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Sheet1 not found' })).setMimeType(ContentService.MimeType.TEXT);
@@ -28,11 +34,9 @@ function doGet(e) {
     
     const data = sheet1.getDataRange().getValues();
     
-    // Skip header row
     for (let i = 1; i < data.length; i++) {
-      const sheetUdise = data[i][0].toString().split('.')[0].trim();
+      const sheetUdise = cleanUdise(data[i][0]);
       if (sheetUdise === udiseCode) {
-        // Also check for existing learners in Data sheet
         const dataSheet = ss.getSheetByName('Data');
         const existingLearners = [];
         let surveyorName = '';
@@ -41,7 +45,7 @@ function doGet(e) {
         if (dataSheet) {
           const learnerData = dataSheet.getDataRange().getValues();
           for (let j = 1; j < learnerData.length; j++) {
-            const learnerUdise = learnerData[j][0].toString().split('.')[0].trim();
+            const learnerUdise = cleanUdise(learnerData[j][0]);
             if (learnerUdise === udiseCode) {
               existingLearners.push({
                 registrationNo: learnerData[j][3].toString(),
@@ -51,7 +55,7 @@ function doGet(e) {
                 maritalStatus: learnerData[j][7].toString(),
                 age: learnerData[j][8].toString(),
                 gender: learnerData[j][9].toString(),
-                isDivyang: learnerData[j][10].toString(),
+                isDivyang: learnerData[j][10].toString().toUpperCase().startsWith('Y') ? 'Y' : 'N',
                 divyangType: learnerData[j][11].toString(),
                 category: learnerData[j][12].toString(),
                 mobile: learnerData[j][13].toString()
@@ -82,10 +86,17 @@ function doGet(e) {
 
 function doPost(e) {
   try {
-    const params = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const dataSheet = ss.getSheetByName('Data');
     
+    if (!dataSheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: 'Sheet named "Data" not found'
+      })).setMimeType(ContentService.MimeType.TEXT);
+    }
+
+    const params = JSON.parse(e.postData.contents);
     const { 
       udiseCode, 
       assessmentCentre, 
@@ -99,9 +110,11 @@ function doPost(e) {
     // If updating, remove existing rows for this UDISE code first
     if (isUpdate) {
       const rows = dataSheet.getDataRange().getValues();
+      const searchUdise = udiseCode.toString().trim().padStart(11, '0');
       // Iterate backwards to avoid index shifting issues
       for (let i = rows.length - 1; i >= 1; i--) {
-        if (rows[i][0].toString() === udiseCode) {
+        const rowUdise = rows[i][0].toString().split('.')[0].trim().padStart(11, '0');
+        if (rowUdise === searchUdise) {
           dataSheet.deleteRow(i + 1);
         }
       }
@@ -136,7 +149,7 @@ function doPost(e) {
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
-      message: error.toString()
+      message: 'Server Error: ' + error.toString()
     })).setMimeType(ContentService.MimeType.TEXT);
   }
 }

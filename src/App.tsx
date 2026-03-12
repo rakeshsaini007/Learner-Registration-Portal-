@@ -122,13 +122,14 @@ export default function App() {
           })));
           setSurveyorName(data.surveyorName || '');
           setSurveyorMobile(data.surveyorMobile || '');
-          setSubmitStatus({ type: 'success', message: 'Existing data found and loaded for this UDISE code.' });
+          setSubmitStatus({ type: 'success', message: '✅ Existing data loaded successfully!' });
         } else {
           console.log('No existing learners found for this UDISE.');
           setIsUpdateMode(false);
           setLearners([]);
           setSurveyorName('');
           setSurveyorMobile('');
+          setSubmitStatus({ type: 'success', message: 'Center found. No existing learners registered yet.' });
         }
       } else {
         console.log('UDISE not found in Sheet1');
@@ -243,6 +244,10 @@ export default function App() {
     setSubmitStatus(null);
 
     try {
+      if (GAS_URL.includes('YOUR_ACTUAL_GOOGLE_SCRIPT_URL')) {
+        throw new Error('Please replace the GAS_URL constant in App.tsx with your actual deployed Web App URL.');
+      }
+
       const payload = {
         udiseCode,
         assessmentCentre,
@@ -277,9 +282,12 @@ export default function App() {
         setIsUpdateMode(false);
       }, 3000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Submission error:', error);
-      setSubmitStatus({ type: 'error', message: 'Failed to submit data. Check console for details.' });
+      setSubmitStatus({ 
+        type: 'error', 
+        message: error.message || 'Failed to submit data. Ensure your GAS is deployed correctly.' 
+      });
     } finally {
       setIsSubmitting(false);
     }
