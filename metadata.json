@@ -1,0 +1,5 @@
+{
+  "name": "Learner Registration Portal",
+  "description": "A portal for registering learners with UDISE-based auto-population and Google Sheets integration.",
+  "requestFramePermissions": []
+}
